@@ -20,6 +20,6 @@ app.use("/book", bookRoute);
 app.use('/reviews', reviewRoutes);
 app.use('/groups', groupRoutes);
 
-app.listen(3000, "0.0.0.0", () => {
+app.listen(8080, "0.0.0.0", () => {
   console.log("🚀 서버 실행 중...");
 });
