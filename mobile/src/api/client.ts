@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://annalise-unreverberative-tipsily.ngrok-free.dev'; 
+const BASE_URL = 'https://unannullable-nonnescient-teri.ngrok-free.dev'; 
 
 const client = axios.create({
   baseURL: BASE_URL,

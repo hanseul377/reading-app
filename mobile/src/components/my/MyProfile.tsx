@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator } from "react-native";
 import { PencilLine } from 'lucide-react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import client from "../../api/client";
 
 export default function MyProfile() {
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -10,8 +11,8 @@ export default function MyProfile() {
     const fetchMyInfo = async () => {
       try {
         setLoading(true);
-        // 💡 API 명세서: GET /users/me
-        const response = await fetch("http://192.168.219.112:3000/users/me");
+        // 💡 API 명세서: GET /user/me
+        const response = await fetch(client.defaults.baseURL + "/user/me");
         
         if (!response.ok) throw new Error("유저 정보를 불러올 수 없습니다.");
         

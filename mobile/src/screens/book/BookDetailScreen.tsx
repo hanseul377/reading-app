@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Image, TouchableOpacity, ActivityIndicator, Sty
 import { useNavigation, useRoute } from "@react-navigation/native";
 import MainLayout from "../../layouts/MainLayout";
 import Feather from '@expo/vector-icons/Feather';
+import client from "../../api/client";
 
 interface BookDetailProps {
   status: "search" | "reading" | "finished";
@@ -21,7 +22,7 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     const fetchBookDetail = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://192.168.219.112:3000/book/${bookId}`);
+        const response = await fetch(client.defaults.baseURL + `/book/${bookId}`);
         const data = await response.json();
 
         setBook(data); 
@@ -38,7 +39,7 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     if (!book) return;
     try {
       // 명세서에 맞춘 Request Body 구성
-      const response = await fetch(`http://192.168.219.112:3000/user-books`, {
+      const response = await fetch(client.defaults.baseURL + `/user-books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

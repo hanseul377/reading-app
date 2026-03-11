@@ -4,8 +4,9 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import MainLayout from "../../layouts/MainLayout";
 import LibrarySection from "../../components/library/LibrarySection";
 import Search from "../../components/common/Search";
+import client from "../../api/client";
 
-const API_URL = "http://192.168.219.112:3000/user-books";
+const API_URL = client.defaults.baseURL + "/user-books";
 
 export default function LibraryScreen() {
   const [books, setBooks] = useState<any[]>([]);

@@ -5,6 +5,7 @@ import MainLayout from "../../layouts/MainLayout";
 import LibraryBookItem from "../../components/library/LibraryBookItem";
 import Search from "../../components/common/Search";
 import Feather from '@expo/vector-icons/Feather';
+import client from "../../api/client";
 
 const CONFIG = {
   wish: {
@@ -45,7 +46,7 @@ export default function LibraryDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const response = await fetch(`http://192.168.219.112:3000/user-books/${userBookId}`, {
+              const response = await fetch(client.defaults.baseURL + `/user-books/${userBookId}`, {
                 method: 'DELETE',
               });
 
@@ -71,7 +72,7 @@ export default function LibraryDetailScreen() {
     const fetchUserBooks = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://192.168.219.112:3000/user-books?status=${status}`);
+        const response = await fetch(client.defaults.baseURL + `/user-books?status=${status}`);
         if (!response.ok) throw new Error('네트워크 응답이 좋지 않습니다.');
         const data = await response.json();
         setBooks(data.books);

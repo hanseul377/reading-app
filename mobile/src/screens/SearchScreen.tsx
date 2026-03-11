@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Search from "../components/common/Search";
 import Feather from '@expo/vector-icons/Feather';
+import client from "../api/client";
 
 const RECENT_SEARCH_KEY = "recent_searches";
 
@@ -50,7 +51,7 @@ export default function SearchScreen() {
       try {
         setIsLoading(true);
         saveRecentSearch(query);
-        const response = await fetch(`http://192.168.219.112:3000/book?query=${encodeURIComponent(query)}`);
+        const response = await fetch(client.defaults.baseURL + `/book?query=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error('서버 응답 없음');
         const data = await response.json();
         
