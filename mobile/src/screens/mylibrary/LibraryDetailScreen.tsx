@@ -5,6 +5,7 @@ import MainLayout from "../../layouts/MainLayout";
 import LibraryBookItem from "../../components/library/LibraryBookItem";
 import Search from "../../components/common/Search";
 import Feather from '@expo/vector-icons/Feather';
+import client from "../../api/client";
 
 const CONFIG = {
   wish: {
@@ -37,18 +38,23 @@ export default function LibraryDetailScreen() {
     const fetchUserBooks = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://192.168.132.1:3000/user-books?status=${status}`);
-        if (!response.ok) throw new Error('네트워크 응답이 좋지 않습니다.');
-        const data = await response.json();
-        setBooks(data.books);
+        // const response = await fetch(`http://192.168.132.1:3000/user-books?status=${status}`);
+        // if (!response.ok) throw new Error('네트워크 응답이 좋지 않습니다.');
+        // const data = await response.json();
+        // setBooks(data.books);
+        const response = await client.get('/user-books', {
+          params: { status }
+        });
+        setBooks(response.data.books);
       } catch (err) {
         console.error("데이터를 가져오는데 실패했습니다:", err);
+        setBooks([]);
       } finally {
         setLoading(false);
       }
     };
     fetchUserBooks();
-  }, [type]);
+  }, [type, status]);
 
   return (
     <MainLayout showHeader={false}>
