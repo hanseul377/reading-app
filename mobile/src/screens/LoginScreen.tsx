@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-
-import { Text, Image, TouchableOpacity, Alert } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from "react";
+import { useState } from "react";
+import { Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ScrollView, Text, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import AuthInput from "../components/auth/AuthInput";
@@ -49,8 +50,8 @@ const handleLogin = async () => {
           paddingTop: 100, 
           paddingHorizontal: 40 
         }}
-        enableOnAndroid={true}
-        extraScrollHeight={20}
+        enableOnAndroid={true} // 안드로이드 대응
+        extraScrollHeight={20} // 키보드와 입력창 사이 간격
       >
         <Image 
           source={{ uri: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/uudb80hvHm/cvdykkw8_expires_30_days.png" }}

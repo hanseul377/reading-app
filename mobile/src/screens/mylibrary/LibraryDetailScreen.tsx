@@ -35,21 +35,6 @@ export default function LibraryDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 
-  const fetchUserBooks = async () => {
-      try {
-        setLoading(true);
-        const data = await client.get('/user-books', {
-          params: { status: status }
-        });
-        setBooks(data.data.books);
-      } catch (err: any) {
-        console.error("❌ 책장 로딩 실패:", err.response?.data || err.message);
-        setBooks([]);
-      } finally {        
-        setLoading(false);
-      }
-    };
-
   const handleDeleteBook = async (userBookId: string, bookTitle: string) => {
     Alert.alert(
       "책 삭제",
@@ -61,15 +46,20 @@ export default function LibraryDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              // const response = await fetch(`http://192.168.219.112:3000/user-books/${userBookId}`, {
-              //   method: 'DELETE',
-              // });
-              await client.delete(`/user-books/${userBookId}`);
+              const response = await fetch(client.defaults.baseURL + `/user-books/${userBookId}`, {
+                method: 'DELETE',
+              });
 
-              setBooks(prev => prev.filter(b => b.userBookId !== userBookId));
-              Alert.alert("알림", "책장에서 삭제되었습니다.");
+              if (response.ok) {
+                setBooks(prev => prev.filter(b => b.userBookId !== userBookId));
+                Alert.alert("알림", "책장에서 삭제되었습니다.");
+              } else {
+                const errorText = await response.text();
+                console.log("❌ 삭제 실패 응답:", errorText);
+                throw new Error("삭제 실패");
+              }
             } catch (err) {
-              console.error("❌ 삭제 실패 상세:", err.response?.data || err.message);
+              console.error("삭제 중 오류:", err);
               Alert.alert("오류", "삭제에 실패했습니다.");
             }
           }
@@ -77,6 +67,48 @@ export default function LibraryDetailScreen() {
       ]
     );
   };
+
+  const fetchUserBooks = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(client.defaults.baseURL + `/user-books?status=${status}`);
+        if (!response.ok) throw new Error('네트워크 응답이 좋지 않습니다.');
+        const data = await response.json();
+        setBooks(data.books);
+      } catch (err) {
+        console.error("데이터를 가져오는데 실패했습니다:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  // const handleDeleteBook = async (userBookId: string, bookTitle: string) => {
+  //   Alert.alert(
+  //     "책 삭제",
+  //     `'${bookTitle}'을(를) 책장에서 삭제하시겠습니까?`,
+  //     [
+  //       { text: "취소", style: "cancel" },
+  //       { 
+  //         text: "확인", 
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           try {
+  //             // const response = await fetch(`http://192.168.219.112:3000/user-books/${userBookId}`, {
+  //             //   method: 'DELETE',
+  //             // });
+  //             await client.delete(`/user-books/${userBookId}`);
+
+  //             setBooks(prev => prev.filter(b => b.userBookId !== userBookId));
+  //             Alert.alert("알림", "책장에서 삭제되었습니다.");
+  //           } catch (err) {
+  //             console.error("❌ 삭제 실패 상세:", err.response?.data || err.message);
+  //             Alert.alert("오류", "삭제에 실패했습니다.");
+  //           }
+  //         }
+  //       }
+  //     ]
+  //   );
+  // };
 
   useEffect(() => {
     fetchUserBooks();

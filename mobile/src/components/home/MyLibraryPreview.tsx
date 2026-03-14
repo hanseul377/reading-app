@@ -4,7 +4,7 @@ import { useIsFocused } from "@react-navigation/native";
 import LibrarySection from "../library/LibrarySection";
 import client from "../../api/client";
 
-const API_URL = "http://192.168.132.1:3000/user-books";
+const API_URL = client.defaults.baseURL + "/user-books";
 
 export default function MyLibraryPreview() {
   const [readingBooks, setReadingBooks] = useState<any[]>([]);
@@ -42,6 +42,8 @@ const fetchReadingBooks = async () => {
     <View style={styles.container}>
       <Text style={styles.previewTitle}>내 서재</Text>
 
+      <View style={styles.titleDivider} />
+
       {loading ? (
         <ActivityIndicator size="small" color="#000" style={{ marginTop: 20 }} />
       ) : (
@@ -67,5 +69,11 @@ const styles = StyleSheet.create({
     marginBottom: 15, 
     fontWeight: "bold",
     textAlign: 'center' 
+  },
+  titleDivider: {
+    height: 1,
+    backgroundColor: "#000",
+    width: '100%',
+    marginBottom: 20,
   },
 });

@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Keyboard } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Search from "../components/common/Search";
+import Feather from '@expo/vector-icons/Feather';
 import client from "../api/client";
 
+const RECENT_SEARCH_KEY = "recent_searches";
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
+  const [isLoading, setIsLoading] = useState(false); 
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const navigation = useNavigation<any>();
 
   // 🔍 도서 검색 API 호출
@@ -57,18 +61,69 @@ export default function SearchScreen() {
 
     } catch (err: any) {
       console.error("❌ 검색 에러:", err.response?.data || err.message);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
     }
+
+  useEffect(() => {
+    const loadSearches = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(RECENT_SEARCH_KEY);
+        if (saved) setRecentSearches(JSON.parse(saved));
+      } catch (err) {
+        console.error("검색 기록 로드 실패:", err);
+      }
+    };
+    loadSearches();
+  }, []);
+
+  const saveRecentSearch = async (text: string) => {
+    const trimmedText = text.trim();
+    if (!trimmedText) return;
+
+    const filtered = recentSearches.filter((item) => item !== trimmedText);
+    const updated = [trimmedText, ...filtered].slice(0, 10);
+
+    setRecentSearches(updated);
+    await AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
   };
 
-  // 📖 검색 결과 아이템 렌더링
+  const removeRecentSearch = async (text: string) => {
+    const updated = recentSearches.filter((item) => item !== text);
+    setRecentSearches(updated);
+    await AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
+  };
+
+  // 도서 검색
+  const handleSearch = async (overrideQuery?: string) => {
+    const query = overrideQuery || searchQuery;
+    if (query.trim().length > 0) {
+      try {
+        setIsLoading(true);
+        saveRecentSearch(query);
+        const response = await fetch(client.defaults.baseURL + `/book?query=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error('서버 응답 없음');
+        const data = await response.json();
+        
+        setResults(data.books || []);
+        
+      } catch (err) {
+        console.error("검색 에러:", err);
+      } finally {
+        setIsLoading(false);
+        Keyboard.dismiss(); 
+      }
+    } else {
+      setResults([]);
+    } 
+  };
+
+  // 검색 결과 아이템 렌더링
   const renderBookItem = ({ item }: any) => (
     <TouchableOpacity 
       style={styles.bookItem} 
-      // 👈 클릭 시 BookDetailScreen으로 bookId 전달
-      onPress={() => navigation.navigate("BookDetailScreen", { bookId: item.isbn })}
+      onPress={() => {
+        const cleanIsbn = item.isbn ? item.isbn.split(' ')[0] : "";
+        navigation.navigate("BookDetailScreen", { bookId: cleanIsbn });
+      }}
     >
       <Image source={{ uri: item.coverImage }} style={styles.coverImage} />
       <View style={styles.bookInfo}>
@@ -84,11 +139,12 @@ export default function SearchScreen() {
         isFullMode={true}
         onBack={() => { Keyboard.dismiss(); navigation.goBack(); }}
         value={searchQuery}
-        onChangeText={(text) => setSearchQuery(text)}
+        onChangeText={(text: string) => setSearchQuery(text)}
         onSubmit={() => {
             console.log("엔터 클릭! 검색어:", searchQuery);
             performSearch();
             // 검색 기록 저장 API 호출 등을 여기서 하시면 됩니다.
+            handleSearch();
         }}
         placeholder="제목, 저자, 출판사 검색"
       />
@@ -96,7 +152,6 @@ export default function SearchScreen() {
         <FlatList 
           data={results}
           keyExtractor={(item, index) => `${item.isbn}_${index}`}
-          //keyExtractor={(item) => item.isbn.toString()}
           renderItem={renderBookItem}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={styles.emptyText}>검색 결과가 없습니다.</Text>}
@@ -106,14 +161,42 @@ export default function SearchScreen() {
             <View style={styles.recentHeader}>
                 <Text style={styles.recentTitle}>최근 검색</Text>
         </View>
+        {recentSearches.length > 0 ? (
+            recentSearches.map((item, index) => (
+              <View key={index} style={styles.recentItemRow}>
+                <TouchableOpacity 
+                  style={{ flex: 1 }}
+                  onPress={() => {
+                    setSearchQuery(item);
+                    handleSearch(item); 
+                  }}
+                >
+                  <Text style={styles.recentItemText}>{item}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => removeRecentSearch(item)}>
+                  <Feather name="x" size={16} color="#AAA" />
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
         <Text style={styles.emptyText}>최근 검색 내역이 없습니다.</Text>
+        )}
       </View>
       )}
     </View>
   );
-}
+}}
 
 const styles = StyleSheet.create({
+  recentItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#EEE',
+  },
+  recentItemText: { fontSize: 16, color: '#333' },
   container: { flex: 1, backgroundColor: "#FFF" },
   listContent: { paddingHorizontal: 20, paddingTop: 10 },
   bookItem: { flexDirection: "row", marginBottom: 15, alignItems: "center" },

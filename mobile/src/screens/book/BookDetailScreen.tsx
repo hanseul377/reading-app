@@ -22,12 +22,10 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     const fetchBookDetail = async () => {
       try {
         setLoading(true);
-        // const response = await fetch(client.defaults.baseURL + `/book/${bookId}`);
-        // const data = await response.json();
+        const response = await fetch(client.defaults.baseURL + `/book/${bookId}`);
+        const data = await response.json();
 
-        // setBook(data); 
-        const response = await client.get(`/book/${bookId}`);
-        setBook(response.data);
+        setBook(data); 
       } catch (err) {
         console.error("상세 데이터 로딩 실패:", err);
       } finally {
@@ -41,39 +39,30 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     if (!book) return;
     try {
       // 명세서에 맞춘 Request Body 구성
-      // const response = await fetch(client.defaults.baseURL + `/user-books`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     isbn: book.isbn,
-      //     status: targetStatus, // 'WISH', 'READING', 'FINISHED'
-      //     title: book.title,
-      //     author: book.author,
-      //     publisher: book.publisher,
-      //     coverImage: book.coverImage,
-      //     description: book.description,
-      //   }),
+      const response = await fetch(client.defaults.baseURL + `/user-books`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isbn: book.isbn,
+          status: targetStatus, // 'WISH', 'READING', 'FINISHED'
+          title: book.title,
+          author: book.author,
+          publisher: book.publisher,
+          coverImage: book.coverImage,
+          description: book.description,
+        }),
         
-      // });
-      // console.log("보내는 데이터:", book.isbn, targetStatus);
-      const response = await client.post('/user-books', {
-        isbn: book.isbn,
-        status: targetStatus,
-        title: book.title,
-        author: book.author,
-        publisher: book.publisher,
-        coverImage: book.coverImage,
-        description: book.description,
       });
+      console.log("보내는 데이터:", book.isbn, targetStatus);
 
       if (response.status === 201 || response.status === 200) {
         Alert.alert("알림", "내 서재에 성공적으로 반영되었습니다.");
-      // } else {
-      //   const errorData = await response.json();
-      //   Alert.alert("오류", errorData.error || "저장에 실패했습니다.");
-       }
+      } else {
+        const errorData = await response.json();
+        Alert.alert("오류", errorData.error || "저장에 실패했습니다.");
+      }
     } catch (err) {
       console.error("저장 중 에러:", err);
       Alert.alert("오류", "서버와 연결할 수 없습니다.");

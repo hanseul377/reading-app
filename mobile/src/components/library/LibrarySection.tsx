@@ -13,6 +13,10 @@ interface LibrarySectionProps {
 
 export default function LibrarySection({title,books, type, hideHeader = false}: LibrarySectionProps) {
   const navigation = useNavigation<any>();
+<<<<<<< HEAD
+=======
+  //const displayItems = [0, 1, 2]; // 책 세 칸으로 고정
+>>>>>>> 72dc44477fa65928a7b833d19013c01251633732
   const previewBooks = books.slice(0, 3);
 
   return (

@@ -26,6 +26,9 @@ export const updateMe = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const userId = req.user.userId
+    //const userId = 1; // 임시 ID
+    // const userId = req.user.id; // 나중에 이 코드를 사용
+    const currentUser = await userService.getUserProfile(userId);
     const { nickname, profileImage } = req.body;
 
     // 최소한 하나의 수정 데이터는 있어야 함
@@ -33,7 +36,7 @@ export const updateMe = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "수정할 정보를 입력해주세요." });
     }
 
-    const updatedUser = await userService.updateUserProfile(userId, nickname, profileImage);
+    const updatedUser = await userService.updateUserProfile(currentUser.id, nickname, profileImage);
 
     res.status(200).json({
       message: "정보 수정 완료",
