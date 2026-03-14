@@ -12,8 +12,6 @@ import CreateGroupScreen from '../screens/group/CreateGroupScreen';
 import LibraryDetailScreen from '../screens/mylibrary/LibraryDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
 
-// import BooksearchScreen from '../screens/BooksearchSceen'; 
-
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
@@ -29,8 +27,6 @@ export default function RootNavigator() {
       <Stack.Screen name="LibraryDetailScreen" component={LibraryDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="BookDetailScreen" component={BookDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} options={{ headerShown: false }} />
-      
-      {/* <Stack.Screen name="BooksearchScreen" component={BooksearchScreen} options={{ headerShown: false }} /> */}
     </Stack.Navigator>
   );
 }
