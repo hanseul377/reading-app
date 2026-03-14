@@ -26,6 +26,9 @@ export const updateMe = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const userId = req.user.userId
+    //const userId = 1; // 임시 ID
+    // const userId = req.user.id; // 나중에 이 코드를 사용
+    const currentUser = await userService.getUserProfile(userId);
     const { nickname, profileImage } = req.body;
 
     // 최소한 하나의 수정 데이터는 있어야 함

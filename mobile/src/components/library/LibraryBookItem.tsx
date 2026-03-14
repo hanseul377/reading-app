@@ -9,7 +9,6 @@ interface LibraryBookItemProps {
 export default function LibraryBookItem({ title, coverImage }: LibraryBookItemProps) {
   return (
     <View style={{ flex: 1, marginRight: 20 }}>
-      {/* 조건부 렌더링: 이미지가 있으면 Image, 없으면 회색 View */}
       {coverImage ? (
         <Image 
           source={{ uri: coverImage }} 
@@ -31,7 +30,6 @@ export default function LibraryBookItem({ title, coverImage }: LibraryBookItemPr
         }} />
       )}
 
-      {/* 책 제목 */}
       <Text style={{ color: "#000000", fontSize: 14 }} numberOfLines={2}>
         {title}
       </Text>

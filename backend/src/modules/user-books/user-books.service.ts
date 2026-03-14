@@ -15,7 +15,11 @@ export const addUserBook = async (userId: number, bookData: BookData, status: st
   // Book 테이블에 이 책이 있는지 확인하고 없으면 생성 (upsert 활용)
   const book = await prisma.book.upsert({
     where: { isbn: bookData.isbn },
-    update: {}, // 이미 존재한다면 정보를 유지함
+    update: {
+      title: bookData.title, // 💡 혹시 모르니 업데이트 정보도 넣어주는 게 좋습니다.
+      author: bookData.author,
+      coverImage: bookData.coverImage,
+    }, // 이미 존재한다면 정보를 유지함
     create: {
       isbn: bookData.isbn,
       title: bookData.title,
@@ -25,9 +29,16 @@ export const addUserBook = async (userId: number, bookData: BookData, status: st
       coverImage: bookData.coverImage || "",
     },
   });
+  const confirmedBook = await prisma.book.findUnique({
+    where: { isbn: bookData.isbn }
+  });
+
+  if (!confirmedBook) {
+    throw new Error("책 데이터를 DB에서 찾을 수 없습니다.");
+  }
   // 이미 서재에 있는 책인지 확인
   const existing = await prisma.readingStatus.findFirst({
-    where: { userId, bookId: book.id },
+    where: { userId: userId, bookId: confirmedBook.id },
   });
 
   //if (existing) throw new Error("이미 서재에 등록된 책입니다.");
@@ -41,9 +52,9 @@ export const addUserBook = async (userId: number, bookData: BookData, status: st
 
   return await prisma.readingStatus.create({
     data: {
-      userId,
-      bookId: book.id,
-      status, // 'WISH', 'READING', 'FINISHED'
+      userId: userId,
+      bookId: confirmedBook.id,
+      status: status, // 'WISH', 'READING', 'FINISHED'
     },
   });
 };

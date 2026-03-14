@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View } from "react-native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 import MainLayout from "../layouts/MainLayout";
 import Banner from "../components/home/Banner";
@@ -11,6 +11,15 @@ import Search from "../components/common/Search";
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused(); 
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (isFocused) {
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [isFocused]);
+  
   return (
     <MainLayout>
       <KeyboardAwareScrollView
@@ -26,7 +35,7 @@ const HomeScreen = () => {
           editable={false} 
         />
         <GroupSection />
-        <MyLibraryPreview />
+        <MyLibraryPreview key={`library-${refreshKey}`}/>
       </KeyboardAwareScrollView>
     </MainLayout>
   );

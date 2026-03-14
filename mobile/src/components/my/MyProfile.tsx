@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image, ActivityIndicator } from "react-native";
 import { PencilLine } from 'lucide-react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import client from "../../api/client";
 
 // 부모로부터 받을 데이터의 타입을 정의
 interface MyProfileProps {
@@ -36,6 +37,7 @@ export default function MyProfile({ user }: MyProfileProps) {
       
         <View style={{ flex: 1 }} />
 
+        {/* 💡 서버에서 받아온 닉네임 표시 */}
         <Text style={{ fontSize: 25, marginRight: 5 }}>
           {user?.nickname || "로딩 중..."}
         </Text>
