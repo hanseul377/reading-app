@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
-import MainLayout from "../../layouts/MainLayout";
-import { ActionButton, BigButton } from "../../components/book/BookActionButton";
+import { ScrollView, View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import MainLayout from "../../layouts/MainLayout";
 import Feather from '@expo/vector-icons/Feather';
+import client from "../../api/client";
 
 interface BookDetailProps {
   status: "search" | "reading" | "finished";
@@ -22,11 +22,9 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     const fetchBookDetail = async () => {
       try {
         setLoading(true);
-        // 👈 주의: 현재 핫스팟으로 연결된 노트북의 새로운 IP 주소를 넣어주세요!
-        const response = await fetch(`http://192.168.219.112:3000/book/${bookId}`);
+        const response = await fetch(client.defaults.baseURL + `/book/${bookId}`);
         const data = await response.json();
-        
-        // 서버 응답 구조가 image_532344.png처럼 { books: [...] }가 아니라 단일 객체인지 확인 필요
+
         setBook(data); 
       } catch (err) {
         console.error("상세 데이터 로딩 실패:", err);
@@ -36,6 +34,82 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
     };
     fetchBookDetail();
   }, [bookId]);
+
+  const handleSaveBook = async (targetStatus: string) => {
+    if (!book) return;
+    try {
+      // 명세서에 맞춘 Request Body 구성
+      const response = await fetch(client.defaults.baseURL + `/user-books`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isbn: book.isbn,
+          status: targetStatus, // 'WISH', 'READING', 'FINISHED'
+          title: book.title,
+          author: book.author,
+          publisher: book.publisher,
+          coverImage: book.coverImage,
+          description: book.description,
+        }),
+        
+      });
+      console.log("보내는 데이터:", book.isbn, targetStatus);
+
+      if (response.status === 201 || response.status === 200) {
+        Alert.alert("알림", "내 서재에 성공적으로 반영되었습니다.");
+      } else {
+        const errorData = await response.json();
+        Alert.alert("오류", errorData.error || "저장에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("저장 중 에러:", err);
+      Alert.alert("오류", "서버와 연결할 수 없습니다.");
+    }
+  };
+
+  const showGroupSelection = () => {
+    // 💡 임시 데이터 (나중에 DB에서 내가 가입한 그룹 목록을 가져오면 됩니다!)
+    const myGroups = [
+      { id: 1, name: "멋쟁이 사자들" },
+      { id: 2, name: "알고리즘 스터디" }
+    ];
+
+    Alert.alert(
+      "그룹 선택",
+      "어느 그룹 서재에 추가할까요?",
+      [
+        ...myGroups.map(group => ({
+          text: group.name,
+          onPress: () => {
+            console.log(`${group.name} 그룹 서재 추가 로직 실행`);
+            // TODO: 그룹 추가 API 연결
+            Alert.alert("성공", `${group.name} 서재에 추가되었습니다!`);
+          }
+        })),
+        { text: "취소", style: "cancel" }
+      ]
+    );
+  };
+
+  const showSaveOptions = (targetStatus: string) => {
+    Alert.alert(
+      "책 추가하기",
+      "어디에 추가하시겠습니까?",
+      [
+        { 
+          text: "내 서재에 추가", 
+          onPress: () => handleSaveBook(targetStatus) 
+        },
+        { 
+          text: "그룹 서재에 추가", 
+          onPress: () => showGroupSelection() 
+        },
+        { text: "취소", style: "cancel" }
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -57,9 +131,8 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
           <Text style={styles.headerTitle}>{"도서 정보"}</Text>
         </View>
 
-        {/* 도서 메인 정보 영역 (시안 반영) */}
+        {/* 도서 메인 정보 영역 */}
         <View style={styles.bookMainInfo}>
-          {/* 책 표지 이미지 */}
           <View style={styles.coverWrapper}>
             {book?.coverImage ? (
               <Image source={{ uri: book.coverImage }} style={styles.coverImage} resizeMode="cover" />
@@ -70,19 +143,16 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
 
           {/* 텍스트 정보 (제목, 저자, 출판사) */}
           <View style={styles.textInfoWrapper}>
-            {/* 제목 가로 스크롤 */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
               <View style={{ width: 300 }}>
                 <Text style={styles.bookTitle} numberOfLines={2}>{book?.title || "제목"}</Text>
               </View>
             </ScrollView>
 
-            {/* 저자 가로 스크롤 */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
               <Text style={styles.bookSubText}>{book?.author || "저자"}</Text>
             </ScrollView>
 
-            {/* 출판사 가로 스크롤 */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
               <Text style={styles.bookSubText}>{book?.publisher || "출판사"}</Text>
             </ScrollView>
@@ -91,24 +161,24 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
             <View style={styles.actionButtons}>
               {status === "search" && (
                 <>
-                  <TouchableOpacity style={styles.directButton} onPress={() => console.log("위시리스트 클릭")}>
+                  <TouchableOpacity style={styles.directButton} onPress={() => showSaveOptions("WISH")}>
                     <Feather name="shopping-bag" size={20} color="black" />
                     <Text style={styles.directButtonLabel}>위시리스트에 담기</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.directButton} onPress={() => console.log("읽고 있어요 클릭")}>
+                  <TouchableOpacity style={styles.directButton} onPress={() => handleSaveBook("READING")}>
                     <Feather name="book-open" size={20} color="black" />
                     <Text style={styles.directButtonLabel}>읽고 있어요</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.directButton} onPress={() => console.log("이미 읽었어요 클릭")}>
+                  <TouchableOpacity style={styles.directButton} onPress={() => handleSaveBook("FINISHED")}>
                     <Feather name="bookmark" size={20} color="black" />
                     <Text style={styles.directButtonLabel}>이미 읽었어요</Text>
                   </TouchableOpacity>
                 </>
               )}
+            </View>
           </View>
-        </View>
         </View>
 
 
@@ -119,8 +189,8 @@ export default function BookDetailScreen({ status = "search" }: BookDetailProps)
           <View style={styles.descriptionBox}> 
             <ScrollView 
               style={{ flex: 1 }} 
-              nestedScrollEnabled={true} // 부모 ScrollView와 충돌을 방지합니다.
-              showsVerticalScrollIndicator={true} // 스크롤 바를 보이게 해서 내려볼 수 있음을 알립니다.
+              nestedScrollEnabled={true} 
+              showsVerticalScrollIndicator={true} 
             >
               <Text style={styles.descriptionText}>
                 {book?.description ? `${book.description}...` : "책 상세 내용이 없습니다."}

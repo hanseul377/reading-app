@@ -1,47 +1,57 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { ScrollView, View, ActivityIndicator } from "react-native";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import client from "../../api/client"; // client 파일 경로에 맞춰 수정하세요
+import { ScrollView, View, ActivityIndicator, RefreshControl } from "react-native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import MainLayout from "../../layouts/MainLayout";
 import LibrarySection from "../../components/library/LibrarySection";
 import Search from "../../components/common/Search";
+import client from "../../api/client";
+
+const API_URL = client.defaults.baseURL + "/user-books";
 
 export default function LibraryScreen() {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
 
-  // 화면이 포커스될 때마다 데이터를 가져오는 방식
-  useFocusEffect(
-    useCallback(() => {
-      const fetchAllBooks = async () => {
-        try {
-          setLoading(true);
-          console.log("--- 서재 데이터 요청 시작 ---");
-          
-          // 공통 client 사용 (BASE_URL이 이미 설정되어 있으므로 경로만 작성)
-          const response = await client.get("/user-books");
-          
-          // axios는 데이터를 response.data에 담아줍니다.
-          const data = response.data;
-          console.log("서버 응답 데이터:", data);
+  const fetchAllBooks = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
-          if (data?.books && Array.isArray(data.books)) {
-            setBooks(data.books);
-          } else {
-            setBooks([]);
-          }
-        } catch (err: any) {
-          console.error("전체 서재 로딩 실패:", err.response?.data || err.message);
-        } finally {
-          setLoading(false);
-          console.log("--- 서재 데이터 요청 종료 ---");
-        }
-      };
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      fetchAllBooks();
-    }, [])
-  );
+      const data = await response.json();
+      
+      if (data?.books && Array.isArray(data.books)) {
+        setBooks(data.books);
+      } else {
+        setBooks([]);
+      }
+    } catch (err) {
+      console.error("전체 서재 로딩 실패:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchAllBooks(books.length === 0);
+    }
+  }, [isFocused, fetchAllBooks]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchAllBooks(false);
+  };
 
   return (
     <MainLayout>
@@ -53,7 +63,11 @@ export default function LibraryScreen() {
         />
       </View>
 
-      <ScrollView style={{ flex: 1, paddingVertical: 35, paddingHorizontal: 26 }}>
+      <ScrollView style={{ flex: 1, paddingVertical: 35, paddingHorizontal: 26 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {loading ? (
           <ActivityIndicator size="large" color="#000" />
         ) : (
