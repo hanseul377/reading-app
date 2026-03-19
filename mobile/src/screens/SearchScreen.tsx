@@ -8,6 +8,7 @@ import client from "../api/client";
 
 const RECENT_SEARCH_KEY = "recent_searches";
 
+
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
