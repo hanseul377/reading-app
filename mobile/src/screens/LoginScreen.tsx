@@ -76,7 +76,7 @@ const handleLogin = async () => {
 
         <TouchableOpacity 
           style={{ 
-            backgroundColor: "#486240", 
+            backgroundColor: "#3D401A", 
             width: '100%', 
             padding: 15, 
             borderRadius: 4, 
@@ -98,7 +98,7 @@ const handleLogin = async () => {
           }} 
           onPress={() => navigation.navigate('SignUp')}
         >
-          <Text style={{ color: "#486240", fontSize: 18 }}>회원가입</Text>
+          <Text style={{ color: "#3D401A", fontSize: 18 }}>회원가입</Text>
         </TouchableOpacity>
       </KeyboardAwareScrollView>
     </SafeAreaView>

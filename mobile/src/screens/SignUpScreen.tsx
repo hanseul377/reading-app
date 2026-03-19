@@ -84,7 +84,7 @@ export default function SignupScreen({ navigation }: any) {
 
         <TouchableOpacity 
           style={{ 
-            backgroundColor: "#486240", 
+            backgroundColor: "#3D401A", 
             padding: 15, 
             borderRadius: 4, 
             alignItems: 'center', 

@@ -29,7 +29,7 @@ export default function MainLayout({ children, title = "우리독서", showHeade
       {/* 하단 - 탭바 고정 60px + 홈바 여백만 분리 */}
       {showTabBar && (
         <>
-          <BottomTabBar />
+          {/*<BottomTabBar />*/}
           {/*<View style={{ height: insets.bottom, backgroundColor: "#7E8341" }} />*/}
         </>
       )}
