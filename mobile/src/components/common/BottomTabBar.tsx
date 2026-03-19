@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 ];
 
 export default function BottomTabBar(props: any) {
-  console.log("📍 TabBar Props:", Object.keys(props));
+  // console.log("📍 TabBar Props:", Object.keys(props));
   // const navigation = useNavigation<any>();
   // const route = useRoute();
   const insets = useSafeAreaInsets();

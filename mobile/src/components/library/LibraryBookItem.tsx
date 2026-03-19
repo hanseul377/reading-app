@@ -1,12 +1,21 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 interface LibraryBookItemProps {
   title: string;
   coverImage?: string; 
+  type?: "wish" | "reading" | "finished";
 }
 
-export default function LibraryBookItem({ title, coverImage }: LibraryBookItemProps) {
+export default function LibraryBookItem({ coverImage, type }: LibraryBookItemProps) {
+  const getBackgroundColor = () => {
+    switch(type) {
+      case 'wish': return '#C5CC9C';     // 연한 연두 (위시리스트)
+      case 'reading': return '#A6AE7A';  // 중간 올리브 (독서 중)
+      case 'finished': return '#8E9469'; // 진한 올리브 (독서 완료)
+      default: return '#D9D9D9';         // 기본 회색
+    }
+  };
   return (
     <View style={{ flex: 1, marginRight: 20 }}>
       {coverImage ? (
@@ -14,25 +23,28 @@ export default function LibraryBookItem({ title, coverImage }: LibraryBookItemPr
           source={{ uri: coverImage }} 
           style={{ 
             width: '100%', 
-            aspectRatio: 3 / 4,
-            borderRadius: 4, 
-            marginBottom: 10 
+            aspectRatio: 2 / 3,
+            borderRadius: 8, 
+            //marginBottom: 10 
           }}
           resizeMode="cover"
         />
       ) : (
-        <View style={{ 
-          width: '100%', 
-          aspectRatio: 3 / 4, 
-          backgroundColor: "#D9D9D9", 
-          borderRadius: 4, 
-          marginBottom: 10 
-        }} />
+        <View style={[styles.placeholder, { backgroundColor: getBackgroundColor() }]}
+        />
       )}
 
       <Text style={{ color: "#000000", fontSize: 14 }} numberOfLines={2}>
-        {title}
+        {/* {title} */}
       </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  placeholder: {
+    width: '100%',
+    aspectRatio: 2 / 3,
+    borderRadius: 8,
+  }
+});
